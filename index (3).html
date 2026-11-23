@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0a0e13">
+<title>MÜHFAK Basketbol İstatistik</title>
+<style>
+:root{
+  --bg:#0a0e13; --panel:#151b24; --panel2:#1d2530; --line:#2b3644;
+  --text:#ffffff; --muted:#a9b6c6; --acc:#ff8a1f; --good:#35d07f; --bad:#ff5c5c; --blue:#4da3ff;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;touch-action:manipulation}
+body{padding:env(safe-area-inset-top) 10px calc(78px + env(safe-area-inset-bottom)) 10px;max-width:640px;margin:0 auto;user-select:none;-webkit-user-select:none}
+h1{font-size:17px;margin:10px 2px 8px;letter-spacing:.2px}
+h2{font-size:16px;margin:16px 2px 8px}
+button{font:inherit;color:var(--text);background:var(--panel2);border:2px solid var(--line);border-radius:14px;min-height:56px;padding:8px 10px;font-weight:700;cursor:pointer}
+button:active{transform:scale(.96);filter:brightness(1.25)}
+input{font:inherit;color:var(--text);background:#0e131a;border:2px solid var(--line);border-radius:12px;min-height:52px;padding:8px 12px;width:100%;user-select:text;-webkit-user-select:text}
+.periods{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.periods button{min-height:48px;font-size:16px}
+.periods button.on{background:var(--acc);border-color:var(--acc);color:#111}
+.clockbox{background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:10px;margin-top:8px}
+.clock{font-size:60px;font-weight:800;text-align:center;font-variant-numeric:tabular-nums;letter-spacing:1px;line-height:1.05}
+.clock.run{color:var(--good)} .clock.end{color:var(--bad)}
+.crow{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:6px;margin-top:8px}
+.crow button{min-height:56px;font-size:15px}
+#btnStart{background:var(--good);border-color:var(--good);color:#06210f;font-size:18px}
+#btnStart.stop{background:var(--bad);border-color:var(--bad);color:#2a0606}
+.court{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.pc{background:var(--panel);border:3px solid var(--line);border-radius:16px;min-height:86px;padding:6px 4px;text-align:center;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px}
+.pc.sel{border-color:var(--acc);background:#2a1d0d;box-shadow:0 0 0 2px var(--acc) inset}
+.pc .no{font-size:28px;font-weight:800;line-height:1}
+.pc .nm{font-size:14px;color:var(--muted);font-weight:600;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pc .tm{font-size:15px;font-weight:700;color:var(--blue);font-variant-numeric:tabular-nums}
+.pc .pt{font-size:12px;color:var(--muted)}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.acts .a3{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mk{background:#0f3a24;border-color:var(--good)} .ms{background:#3a1515;border-color:var(--bad)}
+.acts button{min-height:64px;font-size:16px}
+.a3 button{min-height:64px}
+#btnUndo{grid-column:1/-1;background:#2a2410;border-color:#e6c200;color:#ffe45c;min-height:60px;font-size:17px}
+.toast{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));transform:translateX(-50%) translateY(-90px);background:#fff;color:#111;padding:12px 18px;border-radius:14px;font-weight:800;font-size:16px;z-index:50;transition:transform .2s;max-width:92vw;text-align:center;box-shadow:0 6px 24px #000a}
+.toast.show{transform:translateX(-50%) translateY(0)}
+nav{position:fixed;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:8px 10px calc(8px + env(safe-area-inset-bottom));background:#0a0e13ee;border-top:2px solid var(--line);z-index:40;max-width:640px;margin:0 auto}
+nav button{min-height:54px;font-size:15px}
+nav button.on{background:var(--acc);border-color:var(--acc);color:#111}
+.hide{display:none!important}
+.card{background:var(--panel);border:2px solid var(--line);border-radius:16px;padding:10px;margin-top:8px}
+.form{display:grid;grid-template-columns:90px 1fr;gap:8px}
+.form button{grid-column:1/-1;background:var(--acc);border-color:var(--acc);color:#111}
+.roster{display:grid;gap:6px;margin-top:6px}
+.rrow{display:grid;grid-template-columns:48px 1fr auto auto;gap:8px;align-items:center;background:var(--panel2);border:2px solid var(--line);border-radius:12px;padding:6px 8px}
+.rrow.on{border-color:var(--good)}
+.rrow .n{font-size:22px;font-weight:800}
+.rrow .t{font-variant-numeric:tabular-nums;color:var(--blue);font-weight:700}
+.rrow button{min-height:44px;font-size:14px;padding:4px 10px}
+.hint{color:var(--muted);font-size:14px;margin:4px 2px}
+.tw{overflow-x:auto;border:2px solid var(--line);border-radius:12px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:14px;font-variant-numeric:tabular-nums}
+th,td{padding:9px 7px;text-align:center;white-space:nowrap;border-bottom:1px solid var(--line)}
+th{background:var(--panel2);position:sticky;top:0}
+td:first-child,th:first-child{text-align:left;position:sticky;left:0;background:var(--panel2);font-weight:700}
+tr.tot td{font-weight:800;background:#202a37}
+.bigbtns{display:grid;gap:8px;margin-top:10px}
+.wa{background:#0f3a24;border-color:var(--good)}
+.rs{background:#3a1515;border-color:var(--bad)}
+.modal{position:fixed;inset:0;background:#000b;display:flex;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal .box{background:var(--panel);border:2px solid var(--line);border-radius:18px;padding:18px;max-width:420px;width:100%}
+.modal p{font-size:17px;line-height:1.4;margin:0 0 14px}
+.modal .mb{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.modal .yes{background:var(--bad);border-color:var(--bad);color:#2a0606}
+</style>
+</head>
+<body>
+<h1>MÜHFAK Basketbol İstatistik</h1>
+<div id="toast" class="toast"></div>
+<div id="modal" class="modal hide"><div class="box"><p id="mMsg"></p><div class="mb"><button id="mNo">Vazgeç</button><button id="mYes" class="yes">Onayla</button></div></div></div>
+
+<section id="tab-game">
+  <div class="periods" id="periods"></div>
+  <div class="clockbox">
+    <div id="clock" class="clock">10:00</div>
+    <div class="crow">
+      <button id="btnStart" data-act="toggle">Başlat</button>
+      <button data-act="plus">+1dk</button>
+      <button data-act="minus">-1dk</button>
+      <button data-act="resetclock">Sıfırla</button>
+    </div>
+  </div>
+  <div class="court" id="court"></div>
+  <div class="acts">
+    <button class="mk" data-stat="make1">+1 Sayı</button><button class="ms" data-stat="miss1">1S Kaçan</button>
+    <button class="mk" data-stat="make2">+2 Sayı</button><button class="ms" data-stat="miss2">2S Kaçan</button>
+    <button class="mk" data-stat="make3">+3 Sayı</button><button class="ms" data-stat="miss3">3S Kaçan</button>
+    <div class="a3">
+      <button data-stat="reb">Ribaund (RB)</button>
+      <button data-stat="ast">Asist (AST)</button>
+      <button data-stat="stl">Top Çalma (STL)</button>
+      <button data-stat="blk">Blok (BLK)</button>
+      <button data-stat="to">Top Kaybı (TO)</button>
+      <button data-stat="pf">Faul (FL)</button>
+    </div>
+    <button id="btnUndo" data-act="undo">↩ Geri Al (Undo)</button>
+  </div>
+</section>
+
+<section id="tab-roster" class="hide">
+  <h2>Yeni oyuncu ekle</h2>
+  <div class="card">
+    <div class="form">
+      <input id="inNo" type="number" inputmode="numeric" min="0" max="99" placeholder="No">
+      <input id="inName" type="text" maxlength="12" placeholder="Kısa ad">
+      <button data-act="addplayer">Oyuncu Ekle</button>
+    </div>
+  </div>
+  <h2>Kadro / Değişiklik</h2>
+  <div class="hint" id="subHint"></div>
+  <div class="roster" id="roster"></div>
+  <div class="bigbtns"><button data-act="sample">Örnek Kadroyu Yükle</button></div>
+</section>
+
+<section id="tab-box" class="hide">
+  <h2>Box Score</h2>
+  <div class="tw"><table id="box"></table></div>
+  <div class="bigbtns">
+    <button class="wa" data-act="copy">WhatsApp Kopyala</button>
+    <button class="rs" data-act="newgame">Yeni Maç / Sıfırla</button>
+  </div>
+</section>
+
+<nav>
+  <button data-tab="game" class="on">Maç</button>
+  <button data-tab="roster">Kadro</button>
+  <button data-tab="box">Box Score</button>
+</nav>
+
+<script>
+(function(){
+'use strict';
+var KEY='muhfak_bb_stats_v1';
+var PN={1:'1P',2:'2P',3:'3P',4:'4P',5:'UZ'};
+var DEF={1:600,2:600,3:600,4:600,5:300};
+var S;
+
+function newStats(){return{pts:0,fgm2:0,fga2:0,fgm3:0,fga3:0,ftm:0,fta:0,reb:0,ast:0,stl:0,blk:0,to:0,pf:0};}
+function mkPlayer(id,no,name,on){return{id:id,no:no,name:name,on:!!on,playedSeconds:0,s:newStats()};}
+function samplePlayers(){
+  var l=[[4,'Ali'],[7,'Mert'],[10,'Emre'],[11,'Can'],[23,'Burak'],[5,'Kaan'],[8,'Deniz'],[12,'Arda'],[14,'Efe'],[21,'Onur']];
+  return l.map(function(x,i){return mkPlayer(i+1,x[0],x[1],i<5);});
+}
+function freshState(){
+  return{players:samplePlayers(),nextId:11,period:1,clocks:{1:600,2:600,3:600,4:600,5:300},running:false,lastTick:0,selected:1,undo:[],tab:'game'};
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function load(){
+  try{
+    var r=localStorage.getItem(KEY);
+    if(r){var o=JSON.parse(r);if(o&&o.players&&o.clocks){return o;}}
+  }catch(e){}
+  return freshState();
+}
+function $(id){return document.getElementById(id);}
+function esc(t){return String(t).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function fmt(sec){sec=Math.max(0,Math.floor(sec));var m=Math.floor(sec/60),s=sec%60;return(m<10?'0':'')+m+':'+(s<10?'0':'')+s;}
+function pct(a,b){return b>0?Math.round(a/b*100)+'%':'-';}
+function byId(id){for(var i=0;i<S.players.length;i++){if(S.players[i].id===id)return S.players[i];}return null;}
+function vib(ms){try{if(navigator.vibrate)navigator.vibrate(ms);}catch(e){}}
+
+var toastT;
+function toast(msg){
+  var t=$('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('show');},1600);
+}
+
+function confirmBox(msg,cb){
+  $('mMsg').textContent=msg;$('modal').classList.remove('hide');
+  $('mNo').onclick=function(){$('modal').classList.add('hide');};
+  $('mYes').onclick=function(){$('modal').classList.add('hide');cb();};
+}
+/* ---- Zaman: Date.now() farkı ile ---- */
+function tick(){
+  var now=Date.now(),ended=false;
+  if(S.running){
+    var d=(now-S.lastTick)/1000;if(d<0)d=0;
+    var c=S.clocks[S.period];
+    var used=Math.min(d,c);
+    S.clocks[S.period]=c-used;
+    S.players.forEach(function(p){if(p.on)p.playedSeconds+=used;});
+    if(S.clocks[S.period]<=0.0005){S.clocks[S.period]=0;S.running=false;ended=true;}
+  }
+  S.lastTick=now;
+  save();
+  updateLive();
+  if(ended){toast('Periyot bitti');vib([200,100,200]);renderClock();}
+}
+
+/* ---- Render ---- */
+function renderPeriods(){
+  var h='';
+  for(var k=1;k<=5;k++){h+='<button data-period="'+k+'" class="'+(S.period===k?'on':'')+'">'+PN[k]+'</button>';}
+  $('periods').innerHTML=h;
+}
+function renderClock(){
+  var c=$('clock'),sec=S.clocks[S.period];
+  c.textContent=fmt(Math.ceil(sec-0.0001));
+  c.className='clock'+(S.running?' run':(sec<=0?' end':''));
+  var b=$('btnStart');
+  b.textContent=S.running?'Durdur':'Başlat';
+  b.className=S.running?'stop':'';
+  b.id='btnStart';
+}
+function renderCourt(){
+  var on=S.players.filter(function(p){return p.on;});
+  var h='';
+  on.forEach(function(p){
+    h+='<div class="pc'+(S.selected===p.id?' sel':'')+'" data-pid="'+p.id+'">'+
+       '<div class="no">'+esc(p.no)+'</div><div class="nm">'+esc(p.name)+'</div>'+
+       '<div class="tm" data-time="'+p.id+'">'+fmt(p.playedSeconds)+'</div>'+
+       '<div class="pt" data-pts="'+p.id+'">'+p.s.pts+' sayı</div></div>';
+  });
+  if(!on.length)h='<div class="hint" style="grid-column:1/-1">Sahada oyuncu yok. Kadro sekmesinden oyuncu ekle veya değiştir.</div>';
+  $('court').innerHTML=h;
+}
+function updateLive(){
+  var c=$('clock');
+  var sec=S.clocks[S.period];
+  c.textContent=fmt(Math.ceil(sec-0.0001));
+  S.players.forEach(function(p){
+    var e=document.querySelector('[data-time="'+p.id+'"]');
+    if(e)e.textContent=fmt(p.playedSeconds);
+  });
+  document.querySelectorAll('[data-rtime]').forEach(function(e){
+    var p=byId(parseInt(e.getAttribute('data-rtime'),10));
+    if(p)e.textContent=fmt(p.playedSeconds);
+  });
+}
+function renderRoster(){
+  var sel=byId(S.selected);
+  $('subHint').textContent=sel&&sel.on?'Değişiklik: önce Maç sekmesinde sahadan çıkacak oyuncuyu seç ('+sel.no+' '+sel.name+' seçili), sonra yedekte "Oyuna Al"a bas.':'Değişiklik için önce Maç sekmesinde sahadan bir oyuncu seç.';
+  var list=S.players.slice().sort(function(a,b){return (b.on-a.on)||(a.no-b.no);});
+  var h='';
+  list.forEach(function(p){
+    h+='<div class="rrow'+(p.on?' on':'')+'"><div class="n">'+esc(p.no)+'</div>'+
+       '<div>'+esc(p.name)+'<div class="hint" style="margin:0">'+(p.on?'Sahada':'Yedek')+'</div></div>'+
+       '<div class="t" data-rtime="'+p.id+'">'+fmt(p.playedSeconds)+'</div>'+
+       (p.on?'<button data-bench="'+p.id+'">Çıkar</button>':'<button data-sub="'+p.id+'">Oyuna Al</button>')+'</div>';
+  });
+  $('roster').innerHTML=h||'<div class="hint">Kadro boş.</div>';
+}
+function eff(s){return s.pts+s.reb+s.ast+s.stl+s.blk-((s.fga2+s.fga3)-(s.fgm2+s.fgm3))-(s.fta-s.ftm)-s.to;}
+function renderBox(){
+  var h='<tr><th>Oyuncu</th><th>MIN</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th><th>TO</th><th>PF</th><th>FG%</th><th>3P%</th><th>FT%</th><th>EFF</th></tr>';
+  var T=newStats(),tm=0;
+  S.players.slice().sort(function(a,b){return a.no-b.no;}).forEach(function(p){
+    var s=p.s;
+    var fgm=s.fgm2+s.fgm3,fga=s.fga2+s.fga3;
+    h+='<tr><td>'+esc(p.no)+' '+esc(p.name)+'</td><td>'+fmt(p.playedSeconds)+'</td><td>'+s.pts+'</td><td>'+s.reb+'</td><td>'+s.ast+'</td><td>'+s.stl+'</td><td>'+s.blk+'</td><td>'+s.to+'</td><td>'+s.pf+'</td><td>'+pct(fgm,fga)+'</td><td>'+pct(s.fgm3,s.fga3)+'</td><td>'+pct(s.ftm,s.fta)+'</td><td>'+eff(s)+'</td></tr>';
+    for(var k in T)T[k]+=s[k];
+    tm+=p.playedSeconds;
+  });
+  var tf=T.fgm2+T.fgm3,ta=T.fga2+T.fga3;
+  h+='<tr class="tot"><td>TOPLAM</td><td>'+fmt(tm)+'</td><td>'+T.pts+'</td><td>'+T.reb+'</td><td>'+T.ast+'</td><td>'+T.stl+'</td><td>'+T.blk+'</td><td>'+T.to+'</td><td>'+T.pf+'</td><td>'+pct(tf,ta)+'</td><td>'+pct(T.fgm3,T.fga3)+'</td><td>'+pct(T.ftm,T.fta)+'</td><td>'+eff(T)+'</td></tr>';
+  $('box').innerHTML=h;
+}
+function showTab(t){
+  S.tab=t;
+  ['game','roster','box'].forEach(function(k){$('tab-'+k).classList.toggle('hide',k!==t);});
+  document.querySelectorAll('nav button').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-tab')===t);});
+  if(t==='roster')renderRoster();
+  if(t==='box')renderBox();
+  save();
+}
+function renderAll(){renderPeriods();renderClock();renderCourt();showTab(S.tab||'game');}
+
+/* ---- İstatistik aksiyonları ---- */
+var ACT={
+  make1:{c:{ftm:1,fta:1,pts:1},l:'+1 Sayı'},
+  miss1:{c:{fta:1},l:'1S Kaçan'},
+  make2:{c:{fgm2:1,fga2:1,pts:2},l:'+2 Sayı'},
+  miss2:{c:{fga2:1},l:'2S Kaçan'},
+  make3:{c:{fgm3:1,fga3:1,pts:3},l:'+3 Sayı'},
+  miss3:{c:{fga3:1},l:'3S Kaçan'},
+  reb:{c:{reb:1},l:'Ribaund'},
+  ast:{c:{ast:1},l:'Asist'},
+  stl:{c:{stl:1},l:'Top Çalma'},
+  blk:{c:{blk:1},l:'Blok'},
+  to:{c:{to:1},l:'Top Kaybı'},
+  pf:{c:{pf:1},l:'Faul'}
+};
+function doStat(key){
+  var p=byId(S.selected);
+  if(!p||!p.on){toast('Önce sahadan bir oyuncu seç');vib(80);return;}
+  var a=ACT[key];
+  for(var f in a.c)p.s[f]+=a.c[f];
+  S.undo.push({pid:p.id,c:a.c,l:a.l});
+  if(S.undo.length>300)S.undo.shift();
+  save();
+  toast('#'+p.no+' '+p.name+' · '+a.l);
+  vib(25);
+  renderCourt();
+}
+function doUndo(){
+  var u=S.undo.pop();
+  if(!u){toast('Geri alınacak işlem yok');return;}
+  var p=byId(u.pid);
+  if(p){for(var f in u.c)p.s[f]-=u.c[f];}
+  save();
+  toast('Geri alındı: '+(p?'#'+p.no+' ':'')+u.l);
+  renderCourt();
+}
+
+/* ---- Saat kontrolleri ---- */
+function toggleClock(){
+  if(S.running){tick();S.running=false;save();renderClock();return;}
+  if(S.clocks[S.period]<=0){toast('Süre 0:00 — +1dk veya Sıfırla kullan');return;}
+  S.running=true;S.lastTick=Date.now();save();renderClock();
+}
+function adjust(delta){
+  if(S.running)tick();
+  S.clocks[S.period]=Math.min(5999,Math.max(0,S.clocks[S.period]+delta));
+  save();renderClock();updateLive();
+}
+function resetClock(){
+  if(S.running)tick();
+  S.running=false;
+  S.clocks[S.period]=DEF[S.period];
+  save();renderClock();updateLive();
+  toast(PN[S.period]+' süresi sıfırlandı');
+}
+function setPeriod(k){
+  if(S.running){tick();S.running=false;}
+  S.period=k;save();renderPeriods();renderClock();
+}
+
+/* ---- Kadro ---- */
+function addPlayer(){
+  var no=$('inNo').value.trim(),nm=$('inName').value.trim();
+  if(no===''||nm===''){toast('No ve ad gerekli');return;}
+  var n=parseInt(no,10);
+  if(isNaN(n)||n<0||n>99){toast('Forma no 0-99 olmalı');return;}
+  if(S.players.some(function(p){return p.no===n;})){toast('Bu forma numarası var');return;}
+  var cnt=S.players.filter(function(p){return p.on;}).length;
+  var p=mkPlayer(S.nextId++,n,nm,cnt<5);
+  S.players.push(p);
+  if(p.on&&!byId(S.selected))S.selected=p.id;
+  $('inNo').value='';$('inName').value='';
+  save();renderRoster();renderCourt();
+  toast('Eklendi: #'+n+' '+nm+(p.on?' (sahada)':' (yedek)'));
+}
+function benchPlayer(id){
+  if(S.running)tick();
+  var p=byId(id);if(!p)return;
+  p.on=false;
+  if(S.selected===id){
+    var f=S.players.filter(function(x){return x.on;})[0];
+    S.selected=f?f.id:null;
+  }
+  save();renderRoster();renderCourt();
+  toast('#'+p.no+' '+p.name+' yedeğe alındı');
+}
+function subIn(id){
+  if(S.running)tick();
+  var inP=byId(id);if(!inP)return;
+  var onCount=S.players.filter(function(p){return p.on;}).length;
+  if(onCount<5){
+    inP.on=true;if(!byId(S.selected)||!byId(S.selected).on)S.selected=inP.id;
+    save();renderRoster();renderCourt();toast('#'+inP.no+' '+inP.name+' sahada');return;
+  }
+  var out=byId(S.selected);
+  if(!out||!out.on){toast('Önce Maç sekmesinde çıkacak oyuncuyu seç');vib(80);return;}
+  out.on=false;inP.on=true;S.selected=inP.id;
+  save();renderRoster();renderCourt();
+  toast('#'+out.no+' çıktı → #'+inP.no+' girdi');
+}
+function loadSample(){
+  confirmBox('Örnek kadro yüklensin mi? Mevcut oyuncular ve istatistikler silinir.',function(){
+    S.running=false;S.players=samplePlayers();S.nextId=11;S.selected=1;S.undo=[];save();renderAll();toast('Örnek kadro yüklendi');
+  });
+}
+
+/* ---- Özet / Kopyala ---- */
+function summaryText(){
+  var T=newStats(),L=[];
+  S.players.forEach(function(p){for(var k in T)T[k]+=p.s[k];});
+  L.push('🏀 MÜHFAK Basketbol İstatistik');
+  L.push('Toplam sayı: '+T.pts+' | RB '+T.reb+' | AST '+T.ast+' | STL '+T.stl+' | BLK '+T.blk+' | TO '+T.to+' | PF '+T.pf);
+  L.push('FG '+(T.fgm2+T.fgm3)+'/'+(T.fga2+T.fga3)+' ('+pct(T.fgm2+T.fgm3,T.fga2+T.fga3)+') | 3P '+T.fgm3+'/'+T.fga3+' ('+pct(T.fgm3,T.fga3)+') | FT '+T.ftm+'/'+T.fta+' ('+pct(T.ftm,T.fta)+')');
+  L.push('');
+  S.players.slice().sort(function(a,b){return b.s.pts-a.s.pts||a.no-b.no;}).forEach(function(p){
+    var s=p.s;
+    L.push('#'+p.no+' '+p.name+' — '+fmt(p.playedSeconds)+' dk | '+s.pts+' sayı, '+s.reb+' RB, '+s.ast+' AST, '+s.stl+' STL, '+s.blk+' BLK, '+s.to+' TO, '+s.pf+' PF | FG '+pct(s.fgm2+s.fgm3,s.fga2+s.fga3)+' | EFF '+eff(s));
+  });
+  return L.join('\n');
+}
+function copyText(txt){
+  function fallback(){
+    var ta=document.createElement('textarea');ta.value=txt;ta.style.position='fixed';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.focus();ta.select();
+    var ok=false;try{ok=document.execCommand('copy');}catch(e){}
+    document.body.removeChild(ta);
+    toast(ok?'Özet kopyalandı':'Kopyalanamadı');
+  }
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(function(){toast('Özet kopyalandı');},fallback);
+  }else fallback();
+}
+function newGame(){
+  confirmBox('Yeni maç başlatılsın mı? Tüm istatistikler, süreler ve sayaçlar sıfırlanır (kadro korunur).',function(){
+    S.running=false;S.period=1;S.clocks={1:600,2:600,3:600,4:600,5:300};S.undo=[];
+    S.players.forEach(function(p){p.playedSeconds=0;p.s=newStats();});
+    save();renderAll();toast('Yeni maç hazır');
+  });
+}
+
+/* ---- Olaylar ---- */
+document.addEventListener('click',function(e){
+  var t=e.target.closest('button,.pc');if(!t)return;
+  if(t.hasAttribute('data-stat')){doStat(t.getAttribute('data-stat'));return;}
+  if(t.hasAttribute('data-period')){setPeriod(parseInt(t.getAttribute('data-period'),10));return;}
+  if(t.hasAttribute('data-tab')){showTab(t.getAttribute('data-tab'));return;}
+  if(t.hasAttribute('data-pid')){S.selected=parseInt(t.getAttribute('data-pid'),10);save();renderCourt();vib(15);return;}
+  if(t.hasAttribute('data-bench')){benchPlayer(parseInt(t.getAttribute('data-bench'),10));return;}
+  if(t.hasAttribute('data-sub')){subIn(parseInt(t.getAttribute('data-sub'),10));return;}
+  var a=t.getAttribute('data-act');
+  if(a==='toggle')toggleClock();
+  else if(a==='plus')adjust(60);
+  else if(a==='minus')adjust(-60);
+  else if(a==='resetclock')resetClock();
+  else if(a==='undo')doUndo();
+  else if(a==='addplayer')addPlayer();
+  else if(a==='sample')loadSample();
+  else if(a==='copy')copyText(summaryText());
+  else if(a==='newgame')newGame();
+});
+document.addEventListener('visibilitychange',function(){tick();});
+window.addEventListener('pageshow',function(){tick();});
+window.addEventListener('focus',function(){tick();});
+window.addEventListener('beforeunload',function(){save();});
+document.addEventListener('dblclick',function(e){e.preventDefault();});
+
+/* ---- Başlangıç ---- */
+S=load();
+if(!S.tab)S.tab='game';
+if(!byId(S.selected)){var f0=S.players.filter(function(p){return p.on;})[0];S.selected=f0?f0.id:null;}
+renderAll();
+tick(); // sayfa kapalıyken geçen gerçek zamanı işler
+setInterval(tick,250);
+})();
+</script>
+</body>
+</html>
